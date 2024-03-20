@@ -1,42 +1,37 @@
 // Removed from the Makefie && ./$(BUILD_DIR)/$(OBJ_NAME)
 #include <iostream>
 #include <SDL2/SDL.h>
+#include <cmath>
 
 const int WIDTH = 1024;
 const int HEIGHT = 768;
 
-const std::vector<float> topLeftSample {0.0, 0.0, 0.0};
-const std::vector<float> topRigthtSample {1.0, 1.0, 1.0};
-const std::vector<float> bottomLeftSample {0.0, 0.0, 0.0};
-const std::vector<float> bottomRightSample {1.0, 1.0, 1.0};
+const std::vector<float> topLeftSample {255.0, 0.0, 0.0};
+const std::vector<float> topRigthtSample {0.0, 0.0, 255.0};
+const std::vector<float> bottomLeftSample {0.0, 255.0, 0.0};
+const std::vector<float> bottomRightSample {255.0, 255.0, 0.0};
 
 std::vector<float> interpolatedSample (3,0.0); //3 sized vector with 0.0 in all positions
 
 const float nx = WIDTH+0.0f; //Avoid truncation by unsing nx as float
 const float ny = HEIGHT+0.0f;
+float point[3] = {512.0, 512.0, 512};
+const float maxPoint[2] = {nx, ny};
 
 void linearInterpolation(int x, float domain, 
     const std::vector<float> & initialSample, 
     const std::vector<float> & finalSample,
     std::vector<float> & resultSample)
 {
-	std::cout << x << " - of Domain: "<<nx<< std::endl;
-    //resultSample = (((domain - x)/domain) * initialSample )+ ((x/domain) * finalSample);
-    std::cout << "initialSample: " << initialSample[0] << " " << initialSample[1] << " " << initialSample[2] << std::endl;
-    std::cout << "finalSample: " << finalSample[0] << " " << finalSample[1] << " " << finalSample[2] << std::endl;
-
-    std::cout<< "(domain - x)/domain * initialSample[0]"<<(domain - x)/domain * initialSample[0]<<"\n";
-    std::cout<< "(x/domain) * finalSample[i]"<<(x/domain) * finalSample[0]<<"\n";
-
     for(size_t i = 0; i < 3; i++)
     {
         resultSample[i] = (((domain - x)/domain) * initialSample[i] ) + ((x/domain) * finalSample[i]);
-        std::cout << "New value resultSample[i]: " << resultSample[i] << std::endl;
     }
 }
 
 void bilinearInterpolation(
-    float point[], float maxPoint[],
+    float point[], 
+    const float maxPoint[],
     const std::vector<float>& topLeftSample,
     const std::vector<float>& topRigthtSample,
     const std::vector<float>& bottomLeftSample,
@@ -50,10 +45,8 @@ void bilinearInterpolation(
     {
         topRowInterpolation[i] = (((maxPoint[0] - point[0])/maxPoint[0]) * topLeftSample[i] ) + ((point[0]/maxPoint[0]) * topRigthtSample[i]);
         bottomRowInterpolation[i] = (((maxPoint[0] - point[0])/maxPoint[0]) * bottomLeftSample[i] ) + ((point[0]/maxPoint[0]) * bottomRightSample[i]);
+        interpolatedSample[i]  = (((maxPoint[1] - point[1])/maxPoint[1]) * topRowInterpolation[i] ) + ((point[1]/maxPoint[1]) * bottomRowInterpolation[i]);
 
-        interpolatedSample[i]  = (((maxPoint[0] - point[0])/maxPoint[0]) * topRowInterpolation[i] ) + ((point[0]/maxPoint[0]) * bottomRowInterpolation[i]);
-
-        std::cout << "New value interpolatedSample[i]: " << interpolatedSample[i] << std::endl;
     }
 }
 
@@ -62,16 +55,8 @@ int main(int argc, char * argv[])
 {
     std::cout << "Hello Window! \n";
 
-    std::cout << "Interpolated: " << interpolatedSample[0] << " " << interpolatedSample[1] << " " << interpolatedSample[2] << std::endl;
-    std::cout << "topLeftSample: " << topLeftSample[0] << " " << topLeftSample[1] << " " << topLeftSample[2] << std::endl;
-    std::cout << "topRigthtSample: " << topRigthtSample[0] << " " << topRigthtSample[1] << " " << topRigthtSample[2] << std::endl;
-
     //linearInterpolation(nx/4, nx, topLeftSample, topRigthtSample, interpolatedSample);
-    float point[3] = {512.0, 512.0, 512};
-    float maxPoint[2] = {nx, ny};
-    bilinearInterpolation( point,  maxPoint, topLeftSample, topRigthtSample, bottomLeftSample, bottomRightSample, interpolatedSample);
-
-    std::cout << "bilinearInterpolation: " << interpolatedSample[0] << " " << interpolatedSample[1] << " " << interpolatedSample[2] << std::endl;
+    //bilinearInterpolation( point,  maxPoint, topLeftSample, topRigthtSample, bottomLeftSample, bottomRightSample, interpolatedSample);
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
@@ -101,12 +86,23 @@ int main(int argc, char * argv[])
     }
 
     // Set the background color to black
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    //SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
     // Render a single white pixel in the middle
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderDrawPoint(renderer, WIDTH / 2, HEIGHT / 2);
+    for(size_t i = 0; i < (WIDTH*HEIGHT) - 1; i++)
+    {   
+        
+        point[0] = i % int(nx);
+        point[1] = int(floor( int(i) / int(nx))) % int(ny);
+        bilinearInterpolation( point,  maxPoint, topLeftSample, topRigthtSample, bottomLeftSample, bottomRightSample, interpolatedSample);
+        
+        SDL_SetRenderDrawColor(renderer, interpolatedSample[0], interpolatedSample[1], interpolatedSample[2], 255);
+        SDL_RenderDrawPoint(renderer, point[0], point[1]);
+    }
+    
+    //SDL_Point();
+    //SDL_RenderDrawPoints();
     SDL_RenderPresent(renderer);
 
     bool isRunning = true;
