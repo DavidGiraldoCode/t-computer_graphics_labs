@@ -1,7 +1,12 @@
 // Removed from the Makefie && ./$(BUILD_DIR)/$(OBJ_NAME)
 #include <iostream>
+//#include <glm/glm.hpp>
 #include <SDL2/SDL.h>
 #include <cmath>
+
+//glm::vec3 v(2.f, 2.f, 2.f);
+//float l = glm::length(v);
+
 
 int status = 0;
 const int WIDTH = 1024;
@@ -14,12 +19,35 @@ const std::vector<float> topRigthtSample {0.0, 0.0, 255.0};
 const std::vector<float> bottomLeftSample {0.0, 0.0, 255.0};
 const std::vector<float> bottomRightSample {255.0, 0.0, 0.0};
 
+
+
 std::vector<float> interpolatedSample (3,0.0); //3 sized vector with 0.0 in all positions
 
 const float nx = WIDTH+0.0f; //Avoid truncation by unsing nx as float
 const float ny = HEIGHT+0.0f;
 float point[3] = {512.0, 512.0, 512};
 const float maxPoint[2] = {nx, ny};
+
+void interpolation(int initialSample, int finalSample, std::vector<float>& result)
+{
+    //Inerpolation in which "t" blongs to [0,1]
+    if(result.size() > 2)
+    {
+        float t = 0;
+        for(size_t i = 0; i < result.size(); i++)
+        {
+            std::cout << "t: "<< t <<"\n";
+            result[i] = ((1 - t) * initialSample) + (t * finalSample);
+            t +=  1.0 / (result.size()-1);
+            
+        }   
+        
+    } else
+    {
+        std::cout << "Result vector must be greater than 2\n";
+    }
+    
+}
 
 void linearInterpolation(int x, float domain, 
     const std::vector<float> & initialSample, 
@@ -84,6 +112,16 @@ void createWindowRenderer(const int WIDTH, const int HEIGHT, SDL_Window* & windo
 
 void draw(SDL_Renderer* & renderer)
 {
+    const int INTERPOLATED_VALUES = 3;
+    std::vector<float> result(INTERPOLATED_VALUES, 0.0);
+    interpolation(5, 14, result);
+    std::cout << "result:" << "\n";
+
+    for(size_t i = 0; i < INTERPOLATED_VALUES; i++)
+    {
+        std::cout << result[i] << "\n";
+    }
+
     SDL_RenderClear(renderer);
     for(size_t i = 0; i < (WIDTH*HEIGHT) - 1; i++)
     {   
@@ -91,7 +129,8 @@ void draw(SDL_Renderer* & renderer)
         point[1] = int(floor( int(i) / int(nx))) % int(ny);
         bilinearInterpolation( point,  maxPoint, topLeftSample, topRigthtSample, bottomLeftSample, bottomRightSample, interpolatedSample);
         
-        SDL_SetRenderDrawColor(renderer, interpolatedSample[0], interpolatedSample[1], interpolatedSample[2], 255);
+        //SDL_SetRenderDrawColor(renderer, interpolatedSample[0], interpolatedSample[1], interpolatedSample[2], 255);
+        SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
         SDL_RenderDrawPoint(renderer, point[0], point[1]);
     }
     SDL_RenderPresent(renderer);

@@ -15,3 +15,4 @@ game
 
 # Preserve soft links
 !*/
+./build
