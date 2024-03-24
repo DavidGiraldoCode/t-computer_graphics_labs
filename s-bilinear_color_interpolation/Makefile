@@ -3,8 +3,8 @@ BUILD_DIR = build/debug
 CC = g++
 SRC_FILES = ${wildcard ${SRC_DIR}/*.cpp}
 OBJ_NAME = game
-INCLUDE_PATHS = -Iinclude -I./lib/glm/ -I./include/GLM/
-LIBRARY_PATHS = -Llib
+INCLUDE_PATHS = -I../include
+LIBRARY_PATHS = -L../lib
 COMPILER_FLAGS = -std=c++20 -Wall -O0 -g
 LINKER_FLAGS = -lsdl2
 

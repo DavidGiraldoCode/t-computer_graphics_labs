@@ -4,10 +4,10 @@
             "name": "Debug",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/debug/game",
+            "program": "${workspaceFolder}/s-starfield_projection/build/debug/game",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}/s-starfield_projection",
             "environment": [],
             "externalConsole": false,
             "MIMode": "lldb",
@@ -16,3 +16,5 @@
     ],
     "version": "2.0.0"
 }
+//s-bilinear_color_interpolation
+//s-starfield_projection
