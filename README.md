@@ -1,4 +1,3 @@
-# Boilerplate to start coding you Computer Graphics app
+# Computer Graphics with C++ & SDL2
 
-Based on the work of https://github.com/independentpixels/sdl2-starter.
-Check out his tutorial on YouTube: https://youtu.be/Dyz9O7s7B8w?si=mTLTf2nTkW1RPo87
+Here is a collection of laboratories that explore the nuances of computer-generated graphics, and the math behind them by implementing the algorithms in C++.

@@ -3,7 +3,7 @@
         {
             "name": "Mac",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/s-starfield_projection/**"
             ],
             "defines": [],
             "macFrameworkPath": [
