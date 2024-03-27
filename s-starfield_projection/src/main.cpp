@@ -9,6 +9,7 @@ const int HEIGHT = 768;
 const int DEPTH = 2000;
 SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
+bool running = false;
 
 const float nx = WIDTH+0.0f; //Avoid truncation by unsing nx as float
 const float ny = HEIGHT+0.0f;
@@ -26,15 +27,33 @@ void randomizePosition(std::vector<std::array<float, 3>> & stars)
     for(size_t i = 0; i < stars.size(); i++)
     {
         randomXPos = float(rand()) / float(RAND_MAX);
-        //rand() % WIDTH + 1; //generate secret number between 1 and max domain
         randomYPos = float(rand()) / float(RAND_MAX);
         randomZPos = float(rand()) / float(RAND_MAX);
-        //rand() % HEIGHT + 1; //generate secret number between 1 and max domain
         stars[i][0] = 2.0 * randomXPos - 1.0;
         stars[i][1] = 2.0 * randomYPos - 1.0;
         stars[i][2] = randomZPos;//100;
     }
 }
+
+bool init(const char* title, int xPosition, int yPosition, int height, int width, int flags)
+{
+    if (SDL_Init(SDL_INIT_VIDEO) >= 0)
+    {
+        window = SDL_CreateWindow(title, xPosition, yPosition, height, width, flags);
+        if(window != 0)
+        {
+            renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+        }
+    
+    }
+    else
+    {
+        return false;
+    }
+    return true;
+}
+
+
 void setup()
 {
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
@@ -65,29 +84,13 @@ void createWindowRenderer(const int WIDTH, const int HEIGHT, SDL_Window* & windo
     }
 }
 
-
-void draw(SDL_Renderer* & renderer)
+void render(SDL_Renderer* & renderer)
 {
-
-    randomizePosition(stars);
-
-    for (size_t i = 0; i < 10; i++)
-    {
-        std::cout << "Star (" << stars[i][0] << " ,";
-        std::cout << stars[i][1] << " ,";
-        std::cout << stars[i][2] << " )";
-
-        //WIDTH/2 + stars[i][0]*WIDTH/2, HEIGHT/2 + stars[i][1]*HEIGHT/2
-        float x = WIDTH/2 + stars[i][0]*WIDTH/2;
-        float y = HEIGHT/2 + stars[i][1]*HEIGHT/2;
-        float z = WIDTH/2 + stars[i][2]*WIDTH/2;
-
-        std::cout << " 3D positions (X:" << x << ", ";
-        std::cout << "Y:" << y << ", ";
-        std::cout << "Z:" << z << ")\n";
-    }
-    float focalLenght = 240;
+    SDL_SetRenderDrawColor(renderer,0,0,0,0);
     SDL_RenderClear(renderer);
+    std::cout << "Seconds passed: "<< (SDL_GetTicks()/1000) << "\n";
+    float focalLenght = 240;
+
     for(size_t i = 0; i < stars.size() - 1; i++)
     {   
         point[0] = i % int(nx); // Linear index mapped to x-coodinate system
@@ -103,9 +106,7 @@ void draw(SDL_Renderer* & renderer)
         float zColor = (z*255)/WIDTH;
 
         SDL_SetRenderDrawColor(renderer, zColor, zColor, zColor, 0);
-        //SDL_RenderDrawPoint(renderer, point[0], point[1]);
         SDL_RenderDrawPoint(renderer, u, v);
-        //SDL_RenderDrawPoint(renderer, WIDTH/2 + stars[i][0]*WIDTH/2, HEIGHT/2 + stars[i][1]*HEIGHT/2);
     }
     SDL_RenderPresent(renderer);
 }
@@ -130,14 +131,42 @@ int main(int argc, char * argv[])
 {
     std::cout << "Hello world on Starfiled project \n";
 
-    setup();
-    createWindowRenderer(WIDTH, HEIGHT, window, renderer);
-    if(status != 0)
+    // setup();
+    // createWindowRenderer(WIDTH, HEIGHT, window, renderer);
+    // if(status != 0)
+    // {
+    //     return -1;
+    // }
+
+    if(init("Video Game - SDL window", 
+    SDL_WINDOWPOS_UNDEFINED, 
+    SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN))
     {
-        return -1;
+        running = true;
     }
-    draw(renderer);
-    events();
+    else
+    {
+        return 1;
+    }
+
+    randomizePosition(stars);
+    SDL_Event event;
+    while (running)
+    {
+        render(renderer);
+        //events();
+        if(SDL_PollEvent(&event))
+        {
+            switch(event.type)
+            {
+                case SDL_QUIT:
+                    running = false;
+                break;
+                default:
+                break;
+            }
+        }
+    }
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
@@ -145,3 +174,21 @@ int main(int argc, char * argv[])
     
     return 0;
 }
+
+/*
+ //for (size_t i = 0; i < 10; i++)
+    //{
+        //std::cout << "Star (" << stars[i][0] << " ,";
+        //std::cout << stars[i][1] << " ,";
+        //std::cout << stars[i][2] << " )";
+
+        //WIDTH/2 + stars[i][0]*WIDTH/2, HEIGHT/2 + stars[i][1]*HEIGHT/2
+        // float x = WIDTH/2 + stars[i][0]*WIDTH/2;
+        // float y = HEIGHT/2 + stars[i][1]*HEIGHT/2;
+        // float z = WIDTH/2 + stars[i][2]*WIDTH/2;
+
+        // std::cout << " 3D positions (X:" << x << ", ";
+        // std::cout << "Y:" << y << ", ";
+        // std::cout << "Z:" << z << ")\n";
+    //}
+*/
