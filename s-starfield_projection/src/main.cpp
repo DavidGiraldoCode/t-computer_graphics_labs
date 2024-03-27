@@ -6,6 +6,7 @@
 int status = 0;
 const int WIDTH = 1024;
 const int HEIGHT = 768;
+const int DEPTH = 2000;
 SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
 
@@ -19,18 +20,19 @@ std::vector<std::array<float, 3>> stars(STARS_COUNT);
 
 void randomizePosition(std::vector<std::array<float, 3>> & stars)
 {
-    float randomXPos, randomYPos = 0.0;
+    float randomXPos, randomYPos, randomZPos= 0.0;
     srand (time(nullptr)); //initialize random seed:
 
     for(size_t i = 0; i < stars.size(); i++)
     {
-        randomXPos = rand() / static_cast<double>(RAND_MAX);
+        randomXPos = float(rand()) / float(RAND_MAX);
         //rand() % WIDTH + 1; //generate secret number between 1 and max domain
-        randomYPos = rand() / static_cast<double>(RAND_MAX);
+        randomYPos = float(rand()) / float(RAND_MAX);
+        randomZPos = float(rand()) / float(RAND_MAX);
         //rand() % HEIGHT + 1; //generate secret number between 1 and max domain
         stars[i][0] = 2.0 * randomXPos - 1.0;
-        stars[i][1] = 2.0 * randomYPos - 1.0;;
-        stars[i][3] = 100;
+        stars[i][1] = 2.0 * randomYPos - 1.0;
+        stars[i][2] = randomZPos;//100;
     }
 }
 void setup()
@@ -63,26 +65,47 @@ void createWindowRenderer(const int WIDTH, const int HEIGHT, SDL_Window* & windo
     }
 }
 
+
 void draw(SDL_Renderer* & renderer)
 {
 
     randomizePosition(stars);
 
-    for (size_t i = 0; i < 100; i++)
+    for (size_t i = 0; i < 10; i++)
     {
         std::cout << "Star (" << stars[i][0] << " ,";
         std::cout << stars[i][1] << " ,";
-        std::cout << stars[i][2] << " )\n";
-    }
+        std::cout << stars[i][2] << " )";
 
+        //WIDTH/2 + stars[i][0]*WIDTH/2, HEIGHT/2 + stars[i][1]*HEIGHT/2
+        float x = WIDTH/2 + stars[i][0]*WIDTH/2;
+        float y = HEIGHT/2 + stars[i][1]*HEIGHT/2;
+        float z = WIDTH/2 + stars[i][2]*WIDTH/2;
+
+        std::cout << " 3D positions (X:" << x << ", ";
+        std::cout << "Y:" << y << ", ";
+        std::cout << "Z:" << z << ")\n";
+    }
+    float focalLenght = 240;
     SDL_RenderClear(renderer);
     for(size_t i = 0; i < stars.size() - 1; i++)
     {   
         point[0] = i % int(nx); // Linear index mapped to x-coodinate system
         point[1] = int(floor( int(i) / int(nx))) % int(ny); // Linear index mapped to y-coodinate system
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+
+        float x = WIDTH/2 + stars[i][0]*WIDTH/2;
+        float y = HEIGHT/2 + stars[i][1]*HEIGHT/2;
+        float z = DEPTH/2 + stars[i][2]*DEPTH/2;
+
+        float u = 106 * (stars[i][0]/stars[i][2]) + WIDTH/2;
+        float v = 90 * (stars[i][1]/stars[i][2]) + HEIGHT/2;
+
+        float zColor = (z*255)/WIDTH;
+
+        SDL_SetRenderDrawColor(renderer, zColor, zColor, zColor, 0);
         //SDL_RenderDrawPoint(renderer, point[0], point[1]);
-        SDL_RenderDrawPoint(renderer, WIDTH/2 + stars[i][0]*WIDTH/2, HEIGHT/2 + stars[i][1]*HEIGHT/2);
+        SDL_RenderDrawPoint(renderer, u, v);
+        //SDL_RenderDrawPoint(renderer, WIDTH/2 + stars[i][0]*WIDTH/2, HEIGHT/2 + stars[i][1]*HEIGHT/2);
     }
     SDL_RenderPresent(renderer);
 }
