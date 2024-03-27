@@ -10,6 +10,7 @@ const int DEPTH = 2000;
 SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
 bool running = false;
+int t = 0;
 
 const float nx = WIDTH+0.0f; //Avoid truncation by unsing nx as float
 const float ny = HEIGHT+0.0f;
@@ -103,12 +104,28 @@ void render(SDL_Renderer* & renderer)
         float u = 106 * (stars[i][0]/stars[i][2]) + WIDTH/2;
         float v = 90 * (stars[i][1]/stars[i][2]) + HEIGHT/2;
 
-        float zColor = (z*255)/WIDTH;
+        float zColor = 255 - (255 * stars[i][2]);// - ((z*255)/WIDTH);
 
-        SDL_SetRenderDrawColor(renderer, zColor, zColor, zColor, 0);
+        SDL_SetRenderDrawColor(renderer, zColor, zColor, zColor, 255);
         SDL_RenderDrawPoint(renderer, u, v);
     }
     SDL_RenderPresent(renderer);
+}
+
+void update()
+{
+    int t2 = SDL_GetTicks();
+    float dt = float(t2-t);
+    t = t2;
+    float velocity = 0.001;
+
+    for(size_t i = 0; i < stars.size(); i++)
+    {   
+        stars[i][2] -= velocity*dt;
+
+        if( stars[i][2] <= 0) stars[i][2] += 1;
+        if( stars[i][2] > 1) stars[i][2] -= 1;
+    }
 }
 
 void events()
@@ -143,6 +160,7 @@ int main(int argc, char * argv[])
     SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN))
     {
         running = true;
+        t = SDL_GetTicks();
     }
     else
     {
@@ -154,6 +172,7 @@ int main(int argc, char * argv[])
     while (running)
     {
         render(renderer);
+        update();
         //events();
         if(SDL_PollEvent(&event))
         {
